@@ -6,6 +6,7 @@ from typing import Dict
 from uuid import uuid4
 
 from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from extract_game_values import extract_values
@@ -27,6 +28,13 @@ logging.basicConfig(
 logger = logging.getLogger("gameocr.server")
 
 app = FastAPI(title="Game OCR Service", version="1.0.0")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173", "*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.post("/ocr")
@@ -38,6 +46,8 @@ async def ocr_image(file: UploadFile = File(...)) -> JSONResponse:
     suffix = Path(original_name).suffix or ".png"
     saved_name = f"{uuid4().hex}{suffix}"
     saved_path = DATA_DIR / saved_name
+
+    logger.info("OCR request received filename=%s", original_name)
 
     try:
         content = await file.read()

@@ -16,11 +16,7 @@ stop_service() {
     rm -f "$pid_file"
     return 0
   fi
-  if kill -0 "$pid" 2>/dev/null; then
-    kill "$pid" && echo "$name: stopped PID $pid"
-  else
-    echo "$name: PID $pid not running."
-  fi
+  kill -9 "$pid" && echo "$name: force stopped PID $pid"
   rm -f "$pid_file"
 }
 
