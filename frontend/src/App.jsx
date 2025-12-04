@@ -263,6 +263,47 @@ const App = () => {
         className="hidden"
         onChange={handleFileChange}
       />
+      {(uploadTarget || pendingFile) && (
+        <div className="mx-6 mt-4">
+          <div className="bg-white border border-dashed border-blue-200 rounded-xl p-4 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="space-y-1">
+              <div className="text-sm font-semibold text-blue-700">当前目标：{targetLabel(uploadTarget)}</div>
+              <div className="text-xs text-slate-500">
+                操作：点击识别按钮 → 粘贴或选择图片 → 点击“确定上传”。支持 clipboard 图片粘贴。
+              </div>
+            </div>
+            <div className="flex items-center gap-3 flex-wrap">
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="px-4 py-2 rounded-lg border border-slate-200 bg-slate-50 text-sm font-medium hover:bg-slate-100 transition-all"
+              >
+                选择图片
+              </button>
+              <button
+                onClick={confirmUpload}
+                disabled={!pendingFile || isScanning}
+                className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-all disabled:opacity-50"
+              >
+                确定上传
+              </button>
+              <button
+                onClick={cancelUpload}
+                className="px-3 py-2 rounded-lg border border-slate-200 text-sm text-slate-600 hover:bg-slate-50"
+              >
+                取消
+              </button>
+            </div>
+            <div className="flex items-center gap-3">
+              {pendingPreview ? (
+                <img src={pendingPreview} alt="待上传预览" className="w-24 h-24 object-contain rounded border border-slate-200 bg-slate-50" />
+              ) : (
+                <div className="text-xs text-slate-400">等待粘贴/选择图片</div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* 顶部导航 */}
       <nav className="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center shadow-sm sticky top-0 z-10">
         <div className="flex items-center gap-3">
@@ -310,47 +351,6 @@ const App = () => {
           </div>
         </div>
       </nav>
-
-      {(uploadTarget || pendingFile) && (
-        <div className="mx-6 mt-4">
-          <div className="bg-white border border-dashed border-blue-200 rounded-xl p-4 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div className="space-y-1">
-              <div className="text-sm font-semibold text-blue-700">当前目标：{targetLabel(uploadTarget)}</div>
-              <div className="text-xs text-slate-500">
-                操作：点击识别按钮 → 选择图片或直接粘贴 → 点击“确定上传”。支持 clipboard 图片粘贴。
-              </div>
-            </div>
-            <div className="flex items-center gap-3 flex-wrap">
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="px-4 py-2 rounded-lg border border-slate-200 bg-slate-50 text-sm font-medium hover:bg-slate-100 transition-all"
-              >
-                选择图片
-              </button>
-              <button
-                onClick={confirmUpload}
-                disabled={!pendingFile || isScanning}
-                className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-all disabled:opacity-50"
-              >
-                确定上传
-              </button>
-              <button
-                onClick={cancelUpload}
-                className="px-3 py-2 rounded-lg border border-slate-200 text-sm text-slate-600 hover:bg-slate-50"
-              >
-                取消
-              </button>
-            </div>
-            <div className="flex items-center gap-3">
-              {pendingPreview ? (
-                <img src={pendingPreview} alt="待上传预览" className="w-24 h-24 object-contain rounded border border-slate-200 bg-slate-50" />
-              ) : (
-                <div className="text-xs text-slate-400">等待粘贴/选择图片</div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
 
       <main className="max-w-7xl mx-auto p-6">
         {currentTab === 'daily' ? (

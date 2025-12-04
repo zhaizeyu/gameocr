@@ -1,0 +1,62 @@
+
+> frontend@0.0.0 dev
+> vite --host 0.0.0.0 --port 5173
+
+Port 5173 is in use, trying another one...
+Port 5174 is in use, trying another one...
+Port 5175 is in use, trying another one...
+
+  VITE v7.2.4  ready in 200 ms
+
+  ➜  Local:   http://localhost:5176/
+  ➜  Network: http://192.168.0.10:5176/
+
+> frontend@0.0.0 dev
+> vite --host 0.0.0.0 --port 5173
+
+Port 5173 is in use, trying another one...
+Port 5174 is in use, trying another one...
+Port 5175 is in use, trying another one...
+
+  VITE v7.2.4  ready in 129 ms
+
+  ➜  Local:   http://localhost:5176/
+  ➜  Network: http://192.168.0.10:5176/
+
+> frontend@0.0.0 dev
+> vite --host 0.0.0.0 --port 5173
+
+Port 5173 is in use, trying another one...
+Port 5174 is in use, trying another one...
+Port 5175 is in use, trying another one...
+
+  VITE v7.2.4  ready in 141 ms
+
+  ➜  Local:   http://localhost:5176/
+  ➜  Network: http://192.168.0.10:5176/
+
+> frontend@0.0.0 dev
+> vite --host 0.0.0.0 --port 5173
+
+Port 5173 is in use, trying another one...
+Port 5174 is in use, trying another one...
+Port 5175 is in use, trying another one...
+
+  VITE v7.2.4  ready in 106 ms
+
+  ➜  Local:   http://localhost:5176/
+  ➜  Network: http://192.168.0.10:5176/
+
+> frontend@0.0.0 dev
+> vite --host 0.0.0.0 --port 5173
+
+
+  VITE v7.2.4  ready in 105 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: http://192.168.0.10:5173/
+10:15:54 PM [vite] (client) hmr update /src/App.jsx, /src/index.css
+10:16:00 PM [vite] (client) hmr update /src/App.jsx, /src/index.css
+10:16:05 PM [vite] (client) hmr update /src/App.jsx, /src/index.css
+10:16:17 PM [vite] (client) hmr update /src/App.jsx, /src/index.css
+10:16:30 PM [vite] (client) hmr update /src/index.css
