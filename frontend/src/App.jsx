@@ -1,13 +1,15 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Camera, RotateCcw, Clock, User, ChevronRight, Calculator, FileSpreadsheet, TrendingUp } from 'lucide-react';
 
-// 配置：是否使用模拟数据（调试前端用）。对接 Python 后端时改为 false
+// 配置：真实模式（不再使用 mock）
 const USE_MOCK = false; 
 const API_BASE_URL = "http://localhost:8000"; // FastAPI 地址
 
 const App = () => {
   const [currentTab, setCurrentTab] = useState('daily');
   const [account, setAccount] = useState('账号_01');
+  const defaultAccounts = [{ id: '账号_01', name: '账号_01' }];
+  const [accounts, setAccounts] = useState(defaultAccounts);
   const [currentTime, setCurrentTime] = useState(new Date());
   
   const [isScanning, setIsScanning] = useState(false);
@@ -35,30 +37,119 @@ const App = () => {
   // 今日实时计算结果
   const [result, setResult] = useState(null);
 
-  // --- 新增：周报表数据状态 ---
-  // Key 为日期字符串 (YYYY-MM-DD)，Value 为当天的详细数据
-  // 这里预置了一些假数据，模拟周一和周三已经有数据的情况
-  const [weeklyData, setWeeklyData] = useState({
-    '2025-11-24': { // 周一
-      initCash: 1000000, finalCash: 1500000, 
-      initReserve: 0, finalReserve: 20000,
-      initExp: 1000000, finalExp: 21000000,
-      duration: 5.0, netCash: 500000, netReserve: 20000, netExp: 20000000, hourlyCash: 100000
-    },
-    '2025-11-26': { // 周三
-      initCash: 1200000, finalCash: 1800000,
-      initReserve: 50000, finalReserve: 100000,
-      initExp: 2000000, finalExp: 27000000,
-      duration: 6.0, netCash: 600000, netReserve: 50000, netExp: 25000000, hourlyCash: 100000
-    }
-  });
+  // 周报数据：Key 为 YYYY-MM-DD，Value 为当天数据
+  const [weeklyData, setWeeklyData] = useState({});
+  const [stateReady, setStateReady] = useState(false); // 防止初次加载前写入空数据
+  const [loadingState, setLoadingState] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
+  const loadAccountState = useCallback(async (acct) => {
+    setLoadingState(true);
+    // 切换账号时先清空本地数据，避免旧数据闪现
+    setWeeklyData({});
+    setInitData({ time: '', cash: '', reserve: '', exp: '' });
+    setFinalData({ time: '', cash: '', reserve: '', exp: '' });
+    try {
+      const res = await fetch(`${API_BASE_URL}/state?account=${encodeURIComponent(acct)}`);
+      if (res.ok) {
+        const json = await res.json();
+        setWeeklyData(json.weeklyData || {});
+        setInitData(json.initData || { time: '', cash: '', reserve: '', exp: '' });
+        setFinalData(json.finalData || { time: '', cash: '', reserve: '', exp: '' });
+      }
+    } catch (e) {
+      console.warn('Failed to load state for account', acct, e);
+    } finally {
+      setLoadingState(false);
+      setStateReady(true);
+    }
+  }, []);
+
+  // 从后端加载账户列表（默认 state.json）并加载当前账户数据
+  useEffect(() => {
+    const load = async () => {
+      let targetAccount = account;
+      try {
+        const res = await fetch(`${API_BASE_URL}/state`);
+        if (res.ok) {
+          const json = await res.json();
+          if (json.accounts && Array.isArray(json.accounts) && json.accounts.length) {
+            setAccounts(json.accounts);
+            if (json.account) targetAccount = json.account;
+            setAccount(targetAccount);
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to load account list', e);
+      } finally {
+        // 加载目标账号数据
+        loadAccountState(targetAccount);
+      }
+    };
+    load();
+  }, [loadAccountState]);  // 初次加载
+
+  // 持久化账户列表（无 account 参数）
+  useEffect(() => {
+    if (!stateReady || loadingState) return;
+    const saveAccounts = async () => {
+      try {
+        await fetch(`${API_BASE_URL}/state`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ accounts, account }),
+        });
+      } catch (e) {
+        console.warn('Failed to save account list', e);
+      }
+    };
+    saveAccounts();
+  }, [accounts, account, stateReady, loadingState]);
+
+  // 持久化当前账号数据
+  useEffect(() => {
+    if (!stateReady || loadingState) return;
+    const save = async () => {
+      try {
+        await fetch(`${API_BASE_URL}/state?account=${encodeURIComponent(account)}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            weeklyData,
+            initData,
+            finalData,
+          }),
+        });
+      } catch (e) {
+        console.warn('Failed to save state for account', account, e);
+      }
+    };
+    save();
+  }, [weeklyData, initData, finalData, account, stateReady, loadingState]);
+
+  // 确保当前账号存在
+  useEffect(() => {
+    if (!accounts.find((a) => a.id === account)) {
+      if (accounts.length > 0) {
+        setAccount(accounts[0].id);
+      } else {
+        setAccounts(defaultAccounts);
+        setAccount(defaultAccounts[0].id);
+      }
+    }
+  }, [accounts, account]);
+
   const formatTime = (date) => date.toLocaleTimeString('zh-CN', { hour12: false });
+  const formatDateTime = (date) =>
+    `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${formatTime(date)}`;
+  const parseDateTime = (value) => {
+    const d = value ? new Date(value) : null;
+    return d && !Number.isNaN(d.getTime()) ? d : null;
+  };
   const formatDate = (date) => date.toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' });
 
   // 辅助：获取 YYYY-MM-DD 格式的日期字符串作为 Key
@@ -93,27 +184,22 @@ const App = () => {
     // target: { dataType: 'init'|'final', scanType: 'cash_exp'|'reserve' }
     setIsScanning(true);
     try {
-      let data = {};
-
-      if (USE_MOCK) {
-        await new Promise(r => setTimeout(r, 500));
-        const isInit = target.dataType === 'init';
-        data = target.scanType === 'cash_exp'
-          ? (isInit ? { cash: 1540200, exp: 2400500 } : { cash: 2890500, exp: 5600800 })
-          : (isInit ? { reserve: 50000 } : { reserve: 120000 });
-      } else {
-        const formData = new FormData();
-        formData.append('file', file);
-        const res = await fetch(`${API_BASE_URL}/ocr`, { method: 'POST', body: formData });
-        if (!res.ok) {
-          const text = await res.text();
-          throw new Error(text || `HTTP ${res.status}`);
-        }
-        const json = await res.json();
-        data = parseBackendValues(json.values);
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('account', account);
+      const res = await fetch(`${API_BASE_URL}/ocr?account=${encodeURIComponent(account)}`, {
+        method: 'POST',
+        body: formData,
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || `HTTP ${res.status}`);
       }
+      const json = await res.json();
+      const data = parseBackendValues(json.values);
 
-      const payload = { time: formatTime(new Date()) };
+      const now = new Date();
+      const payload = { time: now.toISOString(), timeDisplay: formatDateTime(now) };
       if (target.scanType === 'cash_exp') {
         payload.cash = data.cash ?? '';
         payload.exp = data.exp ?? '';
@@ -127,7 +213,7 @@ const App = () => {
     } finally {
       setIsScanning(false);
     }
-  }, []);
+  }, [account]);
 
   const startUpload = (dataType, scanType) => {
     setUploadTarget({ dataType, scanType });
@@ -210,13 +296,13 @@ const App = () => {
     // 自动计算时长
     let duration = 4.0; 
     if (initData.time && finalData.time) {
-      // 使用当前日期（假设不跨天）
-      const todayStr = new Date().toDateString();
-      const t1 = new Date(`${todayStr} ${initData.time}`);
-      const t2 = new Date(`${todayStr} ${finalData.time}`);
-      const diffMs = t2.getTime() - t1.getTime();
-      if (!Number.isNaN(diffMs) && diffMs > 0) {
-        duration = Number((diffMs / (1000 * 60 * 60)).toFixed(2));
+      const t1 = parseDateTime(initData.time);
+      const t2 = parseDateTime(finalData.time);
+      if (t1 && t2) {
+        const diffMs = t2.getTime() - t1.getTime();
+        if (!Number.isNaN(diffMs) && diffMs > 0) {
+          duration = Number((diffMs / (1000 * 60 * 60)).toFixed(2));
+        }
       }
     }
     const hourlyCash = duration > 0 ? Math.floor(cashDiff / duration) : 0;
@@ -249,7 +335,9 @@ const App = () => {
         netCash: cashDiff,
         netReserve: reserveDiff,
         netExp: expDiff,
-        hourlyCash: hourlyCash
+        hourlyCash: hourlyCash,
+        hourlyReserve: hourlyReserve,
+        hourlyExp: hourlyExp,
       }
     }));
   };
@@ -339,15 +427,64 @@ const App = () => {
             <User className="w-4 h-4 text-slate-400" />
             <select 
               value={account} 
-              onChange={(e) => setAccount(e.target.value)}
+              onChange={(e) => {
+                const next = e.target.value;
+                if (next === account) return;
+                setAccount(next);
+                loadAccountState(next);
+              }}
               className="bg-transparent font-medium focus:outline-none cursor-pointer"
             >
-              {[...Array(18)].map((_, i) => (
-                <option key={i} value={`账号_${String(i + 1).padStart(2, '0')}`}>
-                  账号_{String(i + 1).padStart(2, '0')}
+              {accounts.map((acc) => (
+                <option key={acc.id} value={acc.id}>
+                  {acc.name}
                 </option>
               ))}
             </select>
+            <div className="flex gap-1">
+              <button
+                className="text-xs text-blue-600 border border-blue-100 px-2 py-1 rounded hover:bg-blue-50"
+                onClick={() => {
+                  const name = window.prompt('新账号名称', `账号_${String(accounts.length + 1).padStart(2, '0')}`);
+                  if (!name) return;
+                  const id = name;
+                  setAccounts((prev) => [...prev, { id, name }]);
+                  setAccount(id);
+                  loadAccountState(id);
+                }}
+              >
+                新增
+              </button>
+              <button
+                className="text-xs text-slate-600 border border-slate-200 px-2 py-1 rounded hover:bg-slate-50"
+                onClick={() => {
+                  const current = accounts.find((a) => a.id === account);
+                  if (!current) return;
+                  const name = window.prompt('修改账号名称', current.name);
+                  if (!name) return;
+                  setAccounts((prev) => prev.map((a) => (a.id === account ? { ...a, name } : a)));
+                }}
+              >
+                重命名
+              </button>
+              <button
+                className="text-xs text-red-600 border border-red-200 px-2 py-1 rounded hover:bg-red-50"
+                onClick={() => {
+                  if (accounts.length <= 1) {
+                    alert('至少保留一个账号');
+                    return;
+                  }
+                  if (!window.confirm('确认删除当前账号？')) return;
+                  const nextAccounts = accounts.filter((a) => a.id !== account);
+                  const next = nextAccounts[0]?.id || defaultAccounts[0].id;
+                  setAccounts(nextAccounts.length ? nextAccounts : defaultAccounts);
+                  setAccount(next);
+                  loadAccountState(next);
+                }}
+              >
+                删除
+              </button>
+            </div>
           </div>
         </div>
       </nav>
@@ -474,7 +611,7 @@ const DataCard = ({ title, type, data, setData, onScanCashExp, onScanReserve, is
         <h3 className="font-bold text-slate-700">{title}</h3>
         {data.time ? (
           <span className="text-xs font-mono text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100">
-            {data.time}
+            {data.timeDisplay || formatDateTime(new Date(data.time))}
           </span>
         ) : (
           <span className="text-xs text-slate-400">未录入时间</span>
@@ -557,17 +694,29 @@ const EfficiencyBox = ({ label, value, unit, color }) => (
 
 // --- 动态周报表组件 ---
 const WeeklyTable = ({ data }) => {
-  // 定义本周日期 (固定为示例中的 11.24 - 11.30)
-  // 实际项目中应根据当前日期动态生成
-  const days = [
-    { name: '周一', date: '2025-11-24', display: '11.24' },
-    { name: '周二', date: '2025-11-25', display: '11.25' }, // 休息
-    { name: '周三', date: '2025-11-26', display: '11.26' },
-    { name: '周四', date: '2025-11-27', display: '11.27' },
-    { name: '周五', date: '2025-11-28', display: '11.28' },
-    { name: '周六', date: '2025-11-29', display: '11.29' },
-    { name: '周日', date: '2025-11-30', display: '11.30' },
-  ];
+  // 动态生成本周日期（周一到周日）
+  const getWeekDays = () => {
+    const today = new Date();
+    const day = today.getDay() || 7; // 周一=1, 周日=7
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - day + 1);
+    const names = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+    return Array.from({ length: 7 }).map((_, idx) => {
+      const d = new Date(monday);
+      d.setDate(monday.getDate() + idx);
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const date = String(d.getDate()).padStart(2, '0');
+      return {
+        name: names[idx],
+        date: `${year}-${month}-${date}`,
+        display: `${month}.${date}`,
+      };
+    });
+  };
+
+  const days = getWeekDays();
+  const dayKeys = new Set(days.map((d) => d.date));
 
   // 辅助：获取某天的字段值，如果没有则返回 '-'
   const getVal = (dateKey, field, unit = '') => {
@@ -575,7 +724,11 @@ const WeeklyTable = ({ data }) => {
     if (!dayData) return '-';
     // 格式化数字：超过1万显示 w，超过1亿显示亿
     let val = dayData[field];
-    if (val === undefined) return '-';
+    if (val === undefined || val === null) return '-';
+    // 支持字符串数字
+    if (typeof val === 'string' && val.trim() !== '' && !Number.isNaN(Number(val))) {
+      val = Number(val);
+    }
     
     // 简易格式化
     if (val > 100000000) return (val / 100000000).toFixed(2) + '亿';
@@ -588,16 +741,37 @@ const WeeklyTable = ({ data }) => {
   const getSum = (field) => {
     let sum = 0;
     let hasData = false;
-    Object.values(data).forEach(d => {
-      if (d[field]) {
-        sum += d[field];
-        hasData = true;
+    Object.entries(data).forEach(([dateKey, d]) => {
+      if (!dayKeys.has(dateKey)) return; // 仅统计本周
+      let val = d[field];
+      if (val === undefined || val === null) return;
+      if (typeof val === 'string' && val.trim() !== '' && !Number.isNaN(Number(val))) {
+        val = Number(val);
       }
+      sum += val;
+      hasData = true;
     });
     if (!hasData) return '-';
     if (sum > 100000000) return (sum / 100000000).toFixed(2) + '亿';
     if (sum > 10000) return (sum / 10000).toFixed(1) + 'w';
     return sum;
+  };
+
+  const calcHourlyTotal = (data, dayKeys, netField, durationField) => {
+    let netSum = 0;
+    let durSum = 0;
+    Object.entries(data).forEach(([dateKey, d]) => {
+      if (!dayKeys.has(dateKey)) return;
+      let net = d[netField];
+      let dur = d[durationField];
+      if (net === undefined || dur === undefined) return;
+      if (typeof net === 'string' && net.trim() !== '' && !Number.isNaN(Number(net))) net = Number(net);
+      if (typeof dur === 'string' && dur.trim() !== '' && !Number.isNaN(Number(dur))) dur = Number(dur);
+      netSum += net || 0;
+      durSum += dur || 0;
+    });
+    if (durSum <= 0) return '-';
+    return Math.floor(netSum / durSum);
   };
 
   return (
@@ -624,8 +798,8 @@ const WeeklyTable = ({ data }) => {
           <tr className="bg-green-50">
              <td className="border border-slate-200 p-3 font-bold text-green-700">净得现金</td>
              {days.map((day, i) => (
-               <td key={i} className={`border border-slate-200 p-3 text-center ${day.name === '周二' ? 'bg-slate-100 text-slate-300' : 'text-green-600 font-bold'}`}>
-                 {day.name === '周二' ? '休息' : getVal(day.date, 'netCash')}
+               <td key={i} className="border border-slate-200 p-3 text-center text-green-600 font-bold">
+                 {getVal(day.date, 'netCash')}
                </td>
              ))}
              <td className="border border-slate-200 p-3 text-center text-blue-700 font-bold bg-blue-50">{getSum('netCash')}</td>
@@ -636,8 +810,8 @@ const WeeklyTable = ({ data }) => {
           <tr className="bg-purple-50">
              <td className="border border-slate-200 p-3 font-bold text-purple-700">净得储备</td>
              {days.map((day, i) => (
-               <td key={i} className={`border border-slate-200 p-3 text-center ${day.name === '周二' ? 'bg-slate-100 text-slate-300' : 'text-purple-600 font-bold'}`}>
-                 {day.name === '周二' ? '休息' : getVal(day.date, 'netReserve')}
+               <td key={i} className="border border-slate-200 p-3 text-center text-purple-600 font-bold">
+                 {getVal(day.date, 'netReserve')}
                </td>
              ))}
              <td className="border border-slate-200 p-3 text-center text-blue-700 font-bold bg-blue-50">{getSum('netReserve')}</td>
@@ -646,15 +820,17 @@ const WeeklyTable = ({ data }) => {
           <tr className="bg-blue-50">
              <td className="border border-slate-200 p-3 font-bold text-blue-700">净得经验</td>
              {days.map((day, i) => (
-               <td key={i} className={`border border-slate-200 p-3 text-center ${day.name === '周二' ? 'bg-slate-100 text-slate-300' : 'text-blue-600 font-bold'}`}>
-                 {day.name === '周二' ? '休息' : getVal(day.date, 'netExp')}
+               <td key={i} className="border border-slate-200 p-3 text-center text-blue-600 font-bold">
+                 {getVal(day.date, 'netExp')}
                </td>
              ))}
              <td className="border border-slate-200 p-3 text-center text-blue-700 font-bold bg-blue-100">{getSum('netExp')}</td>
           </tr>
 
           <TableRow label="挂机时长" days={days} data={data} field="duration" total={getSum('duration') + 'h'} unit="h" />
-          <TableRow label="时薪(现金)" days={days} data={data} field="hourlyCash" total="-" unit="" />
+          <TableRow label="每小时现金" days={days} data={data} field="hourlyCash" total={calcHourlyTotal(data, dayKeys, 'netCash', 'duration')} unit="两/h" />
+          <TableRow label="每小时储备金" days={days} data={data} field="hourlyReserve" total={calcHourlyTotal(data, dayKeys, 'netReserve', 'duration')} unit="两/h" />
+          <TableRow label="每小时经验" days={days} data={data} field="hourlyExp" total={calcHourlyTotal(data, dayKeys, 'netExp', 'duration')} unit="点/h" />
 
         </tbody>
       </table>
@@ -664,12 +840,18 @@ const WeeklyTable = ({ data }) => {
 
 const TableRow = ({ label, days, data, field, total, isHeader, unit }) => {
   // 简易格式化函数 (复用逻辑)
-  const format = (val) => {
-    if (!val && val !== 0) return '-';
-    if (val > 100000000) return (val / 100000000).toFixed(2) + '亿';
-    if (val > 10000) return (val / 10000).toFixed(1) + 'w';
-    return val + (unit || '');
-  };
+    const format = (val) => {
+      if (val === undefined || val === null || (val === '' && val !== 0)) return '-';
+      if (typeof val === 'string' && val.trim() !== '' && !Number.isNaN(Number(val))) {
+        val = Number(val);
+      }
+      if (typeof val === 'number') {
+        if (val > 100000000) return (val / 100000000).toFixed(2) + '亿';
+        if (val > 10000) return (val / 10000).toFixed(1) + 'w';
+        if (val === 0) return '0';
+      }
+      return val + (unit || '');
+    };
 
   return (
     <tr className="hover:bg-slate-50 transition-colors">
