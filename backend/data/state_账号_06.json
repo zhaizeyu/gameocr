@@ -1,0 +1,33 @@
+{
+  "weeklyData": {
+    "2025-12-06": {
+      "initCash": 23907041,
+      "finalCash": 23907044,
+      "initReserve": 0,
+      "finalReserve": 0,
+      "initExp": 136848530,
+      "finalExp": 136848527,
+      "duration": 0.01,
+      "netCash": 3,
+      "netReserve": 0,
+      "netExp": -3,
+      "hourlyCash": 300,
+      "hourlyReserve": 0,
+      "hourlyExp": -300
+    }
+  },
+  "initData": {
+    "time": "2025-12-06T12:43:36.767Z",
+    "cash": "23907041",
+    "reserve": "",
+    "exp": "136848530",
+    "timeDisplay": "2025-12-06 13:43:36"
+  },
+  "finalData": {
+    "time": "2025-12-06T12:44:10.504Z",
+    "cash": "23907044",
+    "reserve": "",
+    "exp": "136848527",
+    "timeDisplay": "2025-12-06 13:44:10"
+  }
+}
