@@ -583,17 +583,20 @@ const App = () => {
                     <p className="text-xs text-slate-500">自动汇总本周数据</p>
                   </div>
                 </div>
-                <button className="flex items-center gap-2 text-slate-600 border border-slate-200 px-4 py-2 rounded-lg text-sm transition-all hover:bg-slate-50">
+                <button
+                  onClick={() => handleExport(API_BASE_URL, account, accounts)}
+                  className="flex items-center gap-2 text-slate-600 border border-slate-200 px-4 py-2 rounded-lg text-sm transition-all hover:bg-slate-50"
+                >
                   <FileSpreadsheet className="w-4 h-4" />
                   导出 Excel
                 </button>
               </div>
 
-              {/* 将周数据传递给报表组件 */}
-              <WeeklyTable data={weeklyData} />
-            </div>
+            {/* 将周数据传递给报表组件 */}
+            <WeeklyTable data={weeklyData} />
           </div>
-        )}
+        </div>
+      )}
       </main>
     </div>
   );
@@ -693,7 +696,7 @@ const EfficiencyBox = ({ label, value, unit, color }) => (
 );
 
 // --- 动态周报表组件 ---
-const WeeklyTable = ({ data }) => {
+const WeeklyTable = ({ data, onExport }) => {
   // 动态生成本周日期（周一到周日）
   const getWeekDays = () => {
     const today = new Date();
@@ -868,6 +871,81 @@ const TableRow = ({ label, days, data, field, total, isHeader, unit }) => {
       <td className="border border-slate-200 p-3 text-center font-bold text-slate-700 bg-slate-50">{total}</td>
     </tr>
   );
+};
+
+// 导出所有周数据（跨账号合并）为 CSV
+const handleExport = async (apiBase, currentAccount, accountsList) => {
+  try {
+    const res = await fetch(`${apiBase}/state`);
+    let accounts = [];
+    let globalAccount = currentAccount || 'default';
+    if (res.ok) {
+      const json = await res.json();
+      if (json.accounts) accounts = json.accounts;
+      if (json.account) globalAccount = json.account;
+    }
+    const accountMap = new Map();
+    const addAcct = (id, name) => {
+      if (!id) return;
+      accountMap.set(id, name || id);
+    };
+    (accountsList || []).forEach((a) => addAcct(a.id, a.name));
+    accounts.forEach((a) => addAcct(a.id, a.name));
+    addAcct(currentAccount, (accountsList || []).find((a) => a.id === currentAccount)?.name);
+    addAcct(globalAccount, accounts.find((a) => a.id === globalAccount)?.name || globalAccount);
+    // 不再强制加 default，避免额外账号
+    const accountEntries = Array.from(accountMap.entries());
+
+    const rows = [];
+    rows.push(['账号', '日期', '初始现金', '最终现金', '净得现金', '初始储备', '最终储备', '净得储备', '初始经验', '最终经验', '净得经验', '挂机时长', '每小时现金', '每小时储备金', '每小时经验']);
+
+    for (const [acct, acctName] of accountEntries) {
+      const acctSafe = encodeURIComponent(acct);
+      const stateRes = await fetch(`${apiBase}/state?account=${acctSafe}`);
+      if (!stateRes.ok) continue;
+      const stateJson = await stateRes.json();
+      const data = stateJson.weeklyData || {};
+      const dates = Object.keys(data).sort();
+      if (dates.length === 0) {
+        // 仍然输出账号行，避免漏掉账号
+        rows.push([acctName, '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
+      } else {
+        dates.forEach((dateKey) => {
+          const d = data[dateKey] || {};
+          rows.push([
+            acctName,
+            dateKey,
+            d.initCash ?? '',
+            d.finalCash ?? '',
+            d.netCash ?? '',
+            d.initReserve ?? '',
+            d.finalReserve ?? '',
+            d.netReserve ?? '',
+            d.initExp ?? '',
+            d.finalExp ?? '',
+            d.netExp ?? '',
+            d.duration ?? '',
+            d.hourlyCash ?? '',
+            d.hourlyReserve ?? '',
+            d.hourlyExp ?? '',
+          ]);
+        });
+      }
+    }
+
+    const csv = rows.map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'weekly_report_all_accounts.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  } catch (e) {
+    alert(`导出失败: ${e.message}`);
+  }
 };
 
 export default App;
