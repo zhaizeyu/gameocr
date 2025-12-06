@@ -2,8 +2,11 @@
 """FastAPI service exposing OCR extraction for game values."""
 import json
 import logging
+import tempfile
+import time
 from datetime import datetime
 from pathlib import Path
+from threading import Lock
 from typing import Dict, Optional
 from uuid import uuid4
 
@@ -20,6 +23,7 @@ STATE_FILE = BASE_DIR / "data" / "state.json"
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 LOG_DIR.mkdir(parents=True, exist_ok=True)
 STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
+STATE_LOCK = Lock()
 
 logging.basicConfig(
     level=logging.INFO,
@@ -54,12 +58,25 @@ def _state_path(account: Optional[str]) -> Path:
     return STATE_FILE.with_name(f"state_{safe}.json")
 
 
+def _write_json_atomic(path: Path, data: Dict) -> None:
+    tmp_fd, tmp_path = tempfile.mkstemp(dir=str(path.parent), prefix="state_", suffix=".json")
+    try:
+        Path(tmp_path).write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+        Path(tmp_path).replace(path)
+    finally:
+        try:
+            Path(tmp_path).unlink(missing_ok=True)
+        except OSError:
+            pass
+
+
 @app.post("/ocr")
 async def ocr_image(
     file: UploadFile = File(...),
     account: Optional[str] = Query(default=None),
     account_form: Optional[str] = Form(default=None),
 ) -> JSONResponse:
+    start_ts = time.time()
     if not file.filename:
         raise HTTPException(status_code=400, detail="No file uploaded")
 
@@ -84,7 +101,15 @@ async def ocr_image(
 
     try:
         values = extract_values(saved_path)
-        logger.info("OCR success file=%s saved=%s values=%s", original_name, saved_path, values)
+        elapsed = (time.time() - start_ts) * 1000
+        logger.info(
+            "OCR success file=%s saved=%s account=%s values=%s elapsed_ms=%.1f",
+            original_name,
+            saved_path,
+            account_name,
+            values,
+            elapsed,
+        )
     except Exception as exc:  # pragma: no cover
         logger.exception("OCR failed for %s", saved_path)
         raise HTTPException(status_code=500, detail=f"OCR failed: {exc}") from exc
@@ -109,7 +134,8 @@ async def get_state(account: Optional[str] = Query(default=None)) -> JSONRespons
     if not state_path.exists():
         return JSONResponse({})
     try:
-        data = json.loads(state_path.read_text(encoding="utf-8"))
+        with STATE_LOCK:
+            data = json.loads(state_path.read_text(encoding="utf-8"))
         return JSONResponse(data)
     except Exception as exc:  # pragma: no cover
         logger.exception("Failed to read state file %s", state_path)
@@ -120,7 +146,8 @@ async def get_state(account: Optional[str] = Query(default=None)) -> JSONRespons
 async def save_state(payload: Dict = Body(...), account: Optional[str] = Query(default=None)) -> JSONResponse:
     state_path = _state_path(account)
     try:
-        state_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+        with STATE_LOCK:
+            _write_json_atomic(state_path, payload)
         logger.info("State saved to %s", state_path)
         return JSONResponse({"status": "ok"})
     except Exception as exc:  # pragma: no cover

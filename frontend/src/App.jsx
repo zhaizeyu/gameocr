@@ -41,6 +41,10 @@ const App = () => {
   const [weeklyData, setWeeklyData] = useState({});
   const [stateReady, setStateReady] = useState(false); // 防止初次加载前写入空数据
   const [loadingState, setLoadingState] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+  const saveTimer = useRef(null);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -49,10 +53,7 @@ const App = () => {
 
   const loadAccountState = useCallback(async (acct) => {
     setLoadingState(true);
-    // 切换账号时先清空本地数据，避免旧数据闪现
-    setWeeklyData({});
-    setInitData({ time: '', cash: '', reserve: '', exp: '' });
-    setFinalData({ time: '', cash: '', reserve: '', exp: '' });
+    setErrorMsg('');
     try {
       const res = await fetch(`${API_BASE_URL}/state?account=${encodeURIComponent(acct)}`);
       if (res.ok) {
@@ -60,9 +61,12 @@ const App = () => {
         setWeeklyData(json.weeklyData || {});
         setInitData(json.initData || { time: '', cash: '', reserve: '', exp: '' });
         setFinalData(json.finalData || { time: '', cash: '', reserve: '', exp: '' });
+      } else {
+        setErrorMsg('加载账号数据失败');
       }
     } catch (e) {
       console.warn('Failed to load state for account', acct, e);
+      setErrorMsg('加载账号数据失败');
     } finally {
       setLoadingState(false);
       setStateReady(true);
@@ -85,6 +89,7 @@ const App = () => {
         }
       } catch (e) {
         console.warn('Failed to load account list', e);
+        setErrorMsg('加载账号列表失败');
       } finally {
         // 加载目标账号数据
         loadAccountState(targetAccount);
@@ -96,7 +101,9 @@ const App = () => {
   // 持久化账户列表（无 account 参数）
   useEffect(() => {
     if (!stateReady || loadingState) return;
-    const saveAccounts = async () => {
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(async () => {
+      setSaving(true);
       try {
         await fetch(`${API_BASE_URL}/state`, {
           method: 'POST',
@@ -105,15 +112,19 @@ const App = () => {
         });
       } catch (e) {
         console.warn('Failed to save account list', e);
+        setErrorMsg('保存账号列表失败');
+      } finally {
+        setSaving(false);
       }
-    };
-    saveAccounts();
+    }, 500);
   }, [accounts, account, stateReady, loadingState]);
 
   // 持久化当前账号数据
   useEffect(() => {
     if (!stateReady || loadingState) return;
-    const save = async () => {
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(async () => {
+      setSaving(true);
       try {
         await fetch(`${API_BASE_URL}/state?account=${encodeURIComponent(account)}`, {
           method: 'POST',
@@ -126,9 +137,11 @@ const App = () => {
         });
       } catch (e) {
         console.warn('Failed to save state for account', account, e);
+        setErrorMsg('保存数据失败');
+      } finally {
+        setSaving(false);
       }
-    };
-    save();
+    }, 500);
   }, [weeklyData, initData, finalData, account, stateReady, loadingState]);
 
   // 确保当前账号存在
@@ -485,7 +498,10 @@ const App = () => {
                 删除
               </button>
             </div>
-          </div>
+            </div>
+          {errorMsg && (
+            <div className="ml-4 text-xs text-red-500">{errorMsg}</div>
+          )}
         </div>
       </nav>
 
@@ -584,11 +600,12 @@ const App = () => {
                   </div>
                 </div>
                 <button
-                  onClick={() => handleExport(API_BASE_URL, account, accounts)}
-                  className="flex items-center gap-2 text-slate-600 border border-slate-200 px-4 py-2 rounded-lg text-sm transition-all hover:bg-slate-50"
+                  onClick={() => handleExport(API_BASE_URL, account, accounts, setExporting, setErrorMsg)}
+                  disabled={exporting}
+                  className="flex items-center gap-2 text-slate-600 border border-slate-200 px-4 py-2 rounded-lg text-sm transition-all hover:bg-slate-50 disabled:opacity-50"
                 >
                   <FileSpreadsheet className="w-4 h-4" />
-                  导出 Excel
+                  {exporting ? '导出中...' : '导出 Excel'}
                 </button>
               </div>
 
@@ -874,7 +891,8 @@ const TableRow = ({ label, days, data, field, total, isHeader, unit }) => {
 };
 
 // 导出所有周数据（跨账号合并）为 CSV
-const handleExport = async (apiBase, currentAccount, accountsList) => {
+const handleExport = async (apiBase, currentAccount, accountsList, setExporting, setErrorMsg) => {
+  setExporting(true);
   try {
     const res = await fetch(`${apiBase}/state`);
     let accounts = [];
@@ -944,7 +962,11 @@ const handleExport = async (apiBase, currentAccount, accountsList) => {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   } catch (e) {
+    console.warn('Export failed', e);
+    setErrorMsg('导出失败');
     alert(`导出失败: ${e.message}`);
+  } finally {
+    setExporting(false);
   }
 };
 

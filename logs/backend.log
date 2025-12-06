@@ -1401,3 +1401,119 @@ INFO:     127.0.0.1:61258 - "GET /state?account=%E8%B4%A6%E5%8F%B7_01 HTTP/1.1" 
 INFO:     127.0.0.1:61258 - "GET /state?account=%E8%B4%A6%E5%8F%B7_02 HTTP/1.1" 200 OK
 INFO:     127.0.0.1:61258 - "GET /state?account=%E8%B4%A6%E5%8F%B7_03 HTTP/1.1" 200 OK
 INFO:     127.0.0.1:61258 - "GET /state?account=%E8%B4%A6%E5%8F%B7_04 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61784 - "GET /state HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61784 - "GET /state?account=%E8%B4%A6%E5%8F%B7_03 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61784 - "OPTIONS /state HTTP/1.1" 200 OK
+2025-12-06 12:26:53,384 [INFO] gameocr.server: State saved to /Users/zhaizeyu/Documents/vscode/local/gameocr/backend/data/state.json
+INFO:     127.0.0.1:61784 - "POST /state HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61786 - "OPTIONS /state?account=%E8%B4%A6%E5%8F%B7_03 HTTP/1.1" 200 OK
+2025-12-06 12:26:53,386 [INFO] gameocr.server: State saved to /Users/zhaizeyu/Documents/vscode/local/gameocr/backend/data/state_账号_03.json
+INFO:     127.0.0.1:61784 - "POST /state?account=%E8%B4%A6%E5%8F%B7_03 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61788 - "GET /state HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61788 - "GET /state?account=%E8%B4%A6%E5%8F%B7_03 HTTP/1.1" 200 OK
+2025-12-06 12:27:06,371 [INFO] gameocr.server: State saved to /Users/zhaizeyu/Documents/vscode/local/gameocr/backend/data/state.json
+INFO:     127.0.0.1:61788 - "POST /state HTTP/1.1" 200 OK
+2025-12-06 12:27:06,374 [INFO] gameocr.server: State saved to /Users/zhaizeyu/Documents/vscode/local/gameocr/backend/data/state_账号_03.json
+INFO:     127.0.0.1:61796 - "POST /state?account=%E8%B4%A6%E5%8F%B7_03 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61805 - "GET /state HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61805 - "GET /state?account=%E8%B4%A6%E5%8F%B7_03 HTTP/1.1" 200 OK
+2025-12-06 12:27:19,369 [INFO] gameocr.server: State saved to /Users/zhaizeyu/Documents/vscode/local/gameocr/backend/data/state.json
+INFO:     127.0.0.1:61805 - "POST /state HTTP/1.1" 200 OK
+2025-12-06 12:27:19,369 [INFO] gameocr.server: State saved to /Users/zhaizeyu/Documents/vscode/local/gameocr/backend/data/state_账号_03.json
+INFO:     127.0.0.1:61807 - "POST /state?account=%E8%B4%A6%E5%8F%B7_03 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61815 - "GET /state HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61815 - "GET /state?account=%E8%B4%A6%E5%8F%B7_03 HTTP/1.1" 200 OK
+2025-12-06 12:27:29,372 [INFO] gameocr.server: State saved to /Users/zhaizeyu/Documents/vscode/local/gameocr/backend/data/state_账号_03.json
+INFO:     127.0.0.1:61815 - "POST /state?account=%E8%B4%A6%E5%8F%B7_03 HTTP/1.1" 200 OK
+2025-12-06 12:27:30,352 [INFO] gameocr.server: State saved to /Users/zhaizeyu/Documents/vscode/local/gameocr/backend/data/state.json
+INFO:     127.0.0.1:61815 - "POST /state HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61823 - "GET /state HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61823 - "GET /state?account=%E8%B4%A6%E5%8F%B7_03 HTTP/1.1" 200 OK
+2025-12-06 12:27:42,349 [INFO] gameocr.server: State saved to /Users/zhaizeyu/Documents/vscode/local/gameocr/backend/data/state_账号_03.json
+INFO:     127.0.0.1:61823 - "POST /state?account=%E8%B4%A6%E5%8F%B7_03 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61831 - "GET /state HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61831 - "GET /state?account=%E8%B4%A6%E5%8F%B7_03 HTTP/1.1" 200 OK
+2025-12-06 12:27:53,350 [INFO] gameocr.server: State saved to /Users/zhaizeyu/Documents/vscode/local/gameocr/backend/data/state_账号_03.json
+INFO:     127.0.0.1:61831 - "POST /state?account=%E8%B4%A6%E5%8F%B7_03 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61839 - "GET /state HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61839 - "GET /state?account=%E8%B4%A6%E5%8F%B7_03 HTTP/1.1" 200 OK
+2025-12-06 12:28:03,350 [INFO] gameocr.server: State saved to /Users/zhaizeyu/Documents/vscode/local/gameocr/backend/data/state_账号_03.json
+INFO:     127.0.0.1:61839 - "POST /state?account=%E8%B4%A6%E5%8F%B7_03 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61847 - "GET /state HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61847 - "GET /state?account=%E8%B4%A6%E5%8F%B7_03 HTTP/1.1" 200 OK
+2025-12-06 12:28:12,352 [INFO] gameocr.server: State saved to /Users/zhaizeyu/Documents/vscode/local/gameocr/backend/data/state_账号_03.json
+INFO:     127.0.0.1:61847 - "POST /state?account=%E8%B4%A6%E5%8F%B7_03 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61855 - "GET /state HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61855 - "GET /state?account=%E8%B4%A6%E5%8F%B7_03 HTTP/1.1" 200 OK
+2025-12-06 12:28:23,350 [INFO] gameocr.server: State saved to /Users/zhaizeyu/Documents/vscode/local/gameocr/backend/data/state_账号_03.json
+INFO:     127.0.0.1:61855 - "POST /state?account=%E8%B4%A6%E5%8F%B7_03 HTTP/1.1" 200 OK
+INFO:     Started server process [65448]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:62131 - "GET /state HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62131 - "GET /state HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62133 - "GET /state?account=%E8%B4%A6%E5%8F%B7_03 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62133 - "GET /state?account=%E8%B4%A6%E5%8F%B7_03 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62133 - "OPTIONS /state?account=%E8%B4%A6%E5%8F%B7_03 HTTP/1.1" 200 OK
+2025-12-06 12:54:15,036 [INFO] gameocr.server: State saved to /Users/zhaizeyu/Documents/vscode/local/gameocr/backend/data/state_账号_03.json
+INFO:     127.0.0.1:62131 - "POST /state?account=%E8%B4%A6%E5%8F%B7_03 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62131 - "GET /state HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62131 - "GET /state HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62133 - "GET /state?account=%E8%B4%A6%E5%8F%B7_03 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62133 - "GET /state?account=%E8%B4%A6%E5%8F%B7_03 HTTP/1.1" 200 OK
+2025-12-06 12:54:18,104 [INFO] gameocr.server: State saved to /Users/zhaizeyu/Documents/vscode/local/gameocr/backend/data/state_账号_03.json
+INFO:     127.0.0.1:62133 - "POST /state?account=%E8%B4%A6%E5%8F%B7_03 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62138 - "GET /state?account=%E8%B4%A6%E5%8F%B7_05 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62138 - "OPTIONS /state?account=%E8%B4%A6%E5%8F%B7_05 HTTP/1.1" 200 OK
+2025-12-06 12:54:25,339 [INFO] gameocr.server: State saved to /Users/zhaizeyu/Documents/vscode/local/gameocr/backend/data/state_账号_05.json
+INFO:     127.0.0.1:62138 - "POST /state?account=%E8%B4%A6%E5%8F%B7_05 HTTP/1.1" 200 OK
+2025-12-06 12:54:31,566 [INFO] gameocr.server: OCR request received filename=testimage.png account=账号_05
+/Users/zhaizeyu/Documents/vscode/local/gameocr/.venv/lib/python3.13/site-packages/paddle/utils/cpp_extension/extension_utils.py:718: UserWarning: No ccache found. Please be aware that recompiling all source files may be required. You can download and install ccache from: https://github.com/ccache/ccache/blob/master/doc/INSTALL.md
+  warnings.warn(warning_message)
+[32mCreating model: ('PP-LCNet_x1_0_doc_ori', None)[0m
+[32mModel files already exist. Using cached files. To redownload, please delete the directory manually: `/Users/zhaizeyu/.paddlex/official_models/PP-LCNet_x1_0_doc_ori`.[0m
+[32mCreating model: ('UVDoc', None)[0m
+[32mModel files already exist. Using cached files. To redownload, please delete the directory manually: `/Users/zhaizeyu/.paddlex/official_models/UVDoc`.[0m
+[32mCreating model: ('PP-LCNet_x1_0_textline_ori', None)[0m
+[32mModel files already exist. Using cached files. To redownload, please delete the directory manually: `/Users/zhaizeyu/.paddlex/official_models/PP-LCNet_x1_0_textline_ori`.[0m
+[32mCreating model: ('PP-OCRv5_server_det', None)[0m
+[32mModel files already exist. Using cached files. To redownload, please delete the directory manually: `/Users/zhaizeyu/.paddlex/official_models/PP-OCRv5_server_det`.[0m
+[32mCreating model: ('PP-OCRv5_server_rec', None)[0m
+[32mModel files already exist. Using cached files. To redownload, please delete the directory manually: `/Users/zhaizeyu/.paddlex/official_models/PP-OCRv5_server_rec`.[0m
+INFO:     127.0.0.1:62140 - "POST /ocr?account=%E8%B4%A6%E5%8F%B7_05 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62140 - "POST /state?account=%E8%B4%A6%E5%8F%B7_05 HTTP/1.1" 200 OK
+[32mCreating model: ('PP-LCNet_x1_0_doc_ori', None)[0m
+[32mModel files already exist. Using cached files. To redownload, please delete the directory manually: `/Users/zhaizeyu/.paddlex/official_models/PP-LCNet_x1_0_doc_ori`.[0m
+[32mCreating model: ('UVDoc', None)[0m
+[32mModel files already exist. Using cached files. To redownload, please delete the directory manually: `/Users/zhaizeyu/.paddlex/official_models/UVDoc`.[0m
+[32mCreating model: ('PP-LCNet_x1_0_textline_ori', None)[0m
+[32mModel files already exist. Using cached files. To redownload, please delete the directory manually: `/Users/zhaizeyu/.paddlex/official_models/PP-LCNet_x1_0_textline_ori`.[0m
+[32mCreating model: ('PP-OCRv5_server_det', None)[0m
+[32mModel files already exist. Using cached files. To redownload, please delete the directory manually: `/Users/zhaizeyu/.paddlex/official_models/PP-OCRv5_server_det`.[0m
+[32mCreating model: ('PP-OCRv5_server_rec', None)[0m
+[32mModel files already exist. Using cached files. To redownload, please delete the directory manually: `/Users/zhaizeyu/.paddlex/official_models/PP-OCRv5_server_rec`.[0m
+INFO:     127.0.0.1:62146 - "POST /ocr?account=%E8%B4%A6%E5%8F%B7_05 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62146 - "POST /state?account=%E8%B4%A6%E5%8F%B7_05 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62154 - "POST /state?account=%E8%B4%A6%E5%8F%B7_05 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62154 - "POST /state?account=%E8%B4%A6%E5%8F%B7_05 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62154 - "POST /state?account=%E8%B4%A6%E5%8F%B7_05 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62158 - "OPTIONS /state HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62158 - "POST /state HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62428 - "GET /state HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62428 - "GET /state?account=%E8%B4%A6%E5%8F%B7_05 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62428 - "POST /state?account=%E8%B4%A6%E5%8F%B7_05 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62481 - "GET /state HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62481 - "GET /state?account=%E8%B4%A6%E5%8F%B7_05 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62481 - "POST /state?account=%E8%B4%A6%E5%8F%B7_05 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62547 - "GET /state HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62547 - "GET /state HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62547 - "GET /state?account=%E8%B4%A6%E5%8F%B7_05 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62547 - "GET /state?account=%E8%B4%A6%E5%8F%B7_05 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62547 - "POST /state?account=%E8%B4%A6%E5%8F%B7_05 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62565 - "GET /state HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62565 - "GET /state?account=%E8%B4%A6%E5%8F%B7_01 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62565 - "GET /state?account=%E8%B4%A6%E5%8F%B7_02 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62565 - "GET /state?account=%E8%B4%A6%E5%8F%B7_03 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62565 - "GET /state?account=%E8%B4%A6%E5%8F%B7_04 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62565 - "GET /state?account=%E8%B4%A6%E5%8F%B7_05 HTTP/1.1" 200 OK
